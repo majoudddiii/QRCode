@@ -4,7 +4,8 @@ const path = require('path');
 const QRCode = require('qrcode');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
-const db = require('./database'); // Import the database
+const fs = require('fs');
+const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,9 +15,15 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ensure /tmp/uploads exists
+const uploadDir = '/tmp/uploads';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, 'public', 'uploads'));
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
@@ -24,6 +31,12 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage: storage });
+
+// Serve uploaded images from /tmp/uploads
+app.get('/uploads/:filename', (req, res) => {
+    const filePath = path.join(uploadDir, req.params.filename);
+    res.sendFile(filePath);
+});
 
 app.get('/', (req, res) => {
     res.render('form');
@@ -35,7 +48,6 @@ app.post('/submit', upload.single('photo'), async (req, res) => {
     const birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     const photo = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // Save user data in SQLite
     db.run(
         `INSERT INTO users (id, name, email, major, semester, birthday, photo) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [id, name, email, major, semester, birthday, photo],
@@ -78,7 +90,6 @@ app.get('/profile/:id', (req, res) => {
 
 app.get('/users', (req, res) => {
     const query = 'SELECT * FROM users';
-
     db.all(query, [], (err, rows) => {
         if (err) {
             console.error(err.message);
@@ -88,7 +99,6 @@ app.get('/users', (req, res) => {
         }
     });
 });
-
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
