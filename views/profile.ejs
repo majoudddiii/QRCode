@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+    <div class="profile-container">
+        <h1 class="heading">User Profile</h1>
+
+        <div class="profile-details-container">
+            <% if (user.photo) { %>
+                <p><strong>Profile Picture:</strong></p>
+                <img src="<%= user.photo %>" alt="Profile Picture">
+            <% } %>
+
+            <p><strong>Name:</strong> <%= user.name %></p>
+            <p><strong>Email:</strong> <%= user.email %></p>
+            <p><strong>Major:</strong> <%= user.major %></p>
+            <p><strong>Semester:</strong> <%= user.semester %></p>
+
+            <p><strong>Birthday:</strong> 
+                <%= user.birthday.split('-').map((item, index) => {
+                    if (index === 1) {
+                        const months = [
+                            "January", "February", "March", "April", "May", "June", 
+                            "July", "August", "September", "October", "November", "December"
+                        ];
+                        return months[parseInt(item) - 1];
+                    }
+                    return item;
+                }).join(' ') %>
+            </p>
+        </div>
+
+        <div class="qr-code-container">
+            <h3>QR Code:</h3>
+            <img src="<%= qrCode %>" alt="QR Code" class="qr-code">
+        </div>
+
+        <div class="qr-button-container">
+            <a href="/" class="submit-btn">Back to Form</a>
+        </div>
+    </div>
+</body>
+</html>
