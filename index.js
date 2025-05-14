@@ -76,6 +76,20 @@ app.get('/profile/:id', (req, res) => {
     });
 });
 
+app.get('/users', (req, res) => {
+    const query = 'SELECT * FROM users';
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send('Error fetching users.');
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
